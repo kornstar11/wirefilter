@@ -95,7 +95,7 @@ impl<'s> FunctionCallExpr<'s> {
 
     pub fn execute(&self, ctx: &'s ExecutionContext<'s>) -> LhsValue<'_> {
         self.function.implementation.execute(
-            self.args.iter().flat_map(|arg| arg.execute(ctx).into_iter()).chain(
+            self.args.iter().flat_map(|arg| arg.execute(ctx)).chain(
                 self.function.opt_params[self.args.len() - self.function.params.len()..]
                     .iter()
                     .map(|opt_arg| opt_arg.default_value.as_ref()),

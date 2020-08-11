@@ -80,11 +80,19 @@ mod tests {
     }
 
     #[test]
-    fn test_filter_against_missing_value() {
+    fn test_filter_against_missing_value_1() {
         let scheme = Scheme! { foo: Int, bar: Int };
         let filter = scheme.parse("bar == 41").unwrap().compile();
         let mut ctx = ExecutionContext::new(&scheme);
         ctx.set_field_value("foo", LhsValue::Int(41)).unwrap();
+        assert_eq!(filter.execute(&ctx), Ok(false));
+    }
+    #[test]
+    fn test_filter_against_missing_value_2() {
+        let scheme = Scheme! { foo: Int, bar: Int };
+        let filter = scheme.parse("foo == 41").unwrap().compile();
+        let mut ctx = ExecutionContext::new(&scheme);
+        ctx.set_field_value("bar", LhsValue::Int(41)).unwrap();
         assert_eq!(filter.execute(&ctx), Ok(false));
     }
     #[test]
