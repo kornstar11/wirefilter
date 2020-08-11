@@ -67,6 +67,7 @@ impl<'s> Filter<'s> {
 mod tests {
     use super::{Filter, SchemeMismatchError};
     use crate::execution_context::ExecutionContext;
+    use crate::LhsValue;
 
     #[test]
     fn test_scheme_mismatch() {
@@ -76,6 +77,44 @@ mod tests {
         let ctx = ExecutionContext::new(&scheme2);
 
         assert_eq!(filter.execute(&ctx), Err(SchemeMismatchError));
+    }
+
+    #[test]
+    fn test_missing_value_true() {
+        let scheme = Scheme! { foo: Int, bar: Int };
+        let filter = scheme.parse("foo == 42").unwrap().compile();
+        let mut ctx = ExecutionContext::new(&scheme);
+        ctx.set_field_value("foo", LhsValue::Int(42)).unwrap();
+        assert_eq!(filter.execute(&ctx), Ok(true));
+    }
+
+    #[test]
+    fn test_missing_value_false() {
+        let scheme = Scheme! { foo: Int, bar: Int };
+        let filter = scheme.parse("foo == 41").unwrap().compile();
+        let mut ctx = ExecutionContext::new(&scheme);
+        ctx.set_field_value("foo", LhsValue::Int(42)).unwrap();
+        assert_eq!(filter.execute(&ctx), Ok(false));
+    }
+
+    #[test]
+    fn test_not_missing_value_true() {
+        let scheme = Scheme! { foo: Int, bar: Int };
+        let filter = scheme.parse("foo == 42 && bar == 51").unwrap().compile();
+        let mut ctx = ExecutionContext::new(&scheme);
+        ctx.set_field_value("foo", LhsValue::Int(42)).unwrap();
+        ctx.set_field_value("bar", LhsValue::Int(51)).unwrap();
+        assert_eq!(filter.execute(&ctx), Ok(true));
+    }
+
+    #[test]
+    fn test_not_missing_value_false() {
+        let scheme = Scheme! { foo: Int, bar: Int };
+        let filter = scheme.parse("foo == 42 && bar == 52").unwrap().compile();
+        let mut ctx = ExecutionContext::new(&scheme);
+        ctx.set_field_value("foo", LhsValue::Int(42)).unwrap();
+        ctx.set_field_value("bar", LhsValue::Int(51)).unwrap();
+        assert_eq!(filter.execute(&ctx), Ok(false));
     }
 
     #[test]
