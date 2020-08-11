@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f4528227-9052-45a0-b726-4884d0e79cb4" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/engine/src/ast/field_expr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/ast/field_expr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/ast/function_expr.rs" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/ast/function_expr.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/execution_context.rs" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/execution_context.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/src/filter.rs" beforeDir="false" afterPath="$PROJECT_DIR$/engine/src/filter.rs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="lutglt4t" />
+  </component>
+  <component name="ProjectId" id="1fCcgsSroxVP5oimpFbpV3kpofl" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f4528227-9052-45a0-b726-4884d0e79cb4" name="Default Changelist" comment="" />
+      <created>1595725629816</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1595725629816</updated>
+      <workItem from="1595725631829" duration="1800000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+</project>

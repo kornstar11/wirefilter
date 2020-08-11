@@ -148,6 +148,16 @@ impl<'s> LhsFieldExpr<'s> {
                 CompiledExpr::new(move |ctx| func(call.execute(ctx)))
             }
             LhsFieldExpr::Field(f) => {
+                let field_opt = ctx.get_field_value_unchecked(f);
+                match field_opt {
+                    Some(f) => {
+                        CompiledExpr::new(move |ctx| func(f))
+                    },
+                    None => {
+                        CompiledExpr::match_true()
+                    }
+                }
+
                 CompiledExpr::new(move |ctx| func(ctx.get_field_value_unchecked(f)))
             }
         }

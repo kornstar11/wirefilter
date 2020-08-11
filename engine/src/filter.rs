@@ -16,6 +16,13 @@ pub struct SchemeMismatchError;
 pub(crate) struct CompiledExpr<'s>(Box<dyn 's + Fn(&ExecutionContext) -> bool + Sync + Send>);
 
 impl<'s> CompiledExpr<'s> {
+    pub(crate) fn match_true() -> Self {
+        let true_fn: Fn(&ExecutionContext) -> bool = |exe| {
+            true
+        };
+        Self::new(true_fn)
+    }
+
     /// Creates a compiled expression IR from a generic closure.
     pub(crate) fn new(closure: impl 's + Fn(&ExecutionContext) -> bool + Sync + Send) -> Self {
         CompiledExpr(Box::new(closure))
