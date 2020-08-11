@@ -154,8 +154,8 @@ impl<'s> LhsFieldExpr<'s> {
                         Some(f) => {
                             func(f)
                         },
-                        None => {
-                            true
+                        None => { //If we do not find the field, we consider this a non match
+                            false
                         }
                     }
                 })
