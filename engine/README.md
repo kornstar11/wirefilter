@@ -58,6 +58,69 @@ fn main() -> Result<(), failure::Error> {
 }
 ```
 
+## Macros Example
+Using derive macros you can create a domain struct and auto genereate the Scheme and filter logic. See below:
+
+Defining our domain objects:
+```rust
+#[derive(Debug, Filterable, HasFields)]
+#[field(name="http")]
+struct Http {
+    method: String,
+    ua: i32,
+}
+```
+
+```rust
+#[derive(Debug, Filterable, HasFields)]
+struct Flow {
+    port: i32
+}
+```
+
+* `Filterable` will impl the Filterable trait which takes a Scheme and returns a populated `Result<ExecutionContext, Error>`
+* `HasFields` will create a `fields()` static method which returns a `Vec<(String, Type)>`. This vec can be used to create a Scheme using the `try_from_iter` method.
+
+Putting it together we can do the following: 
+
+```rust
+#[derive(Debug, Filterable, HasFields)]
+#[field(name="http")]
+struct Http {
+    method: String,
+    ua: String,
+}
+
+#[derive(Debug, Filterable, HasFields)]
+struct Flow {
+    port: i32
+}
+let fields = Http::fields().extend(Flow::fields());
+let scheme = Scheme::try_from_iter(fields.into_iter())?;
+
+// Parse a Wireshark-like expression into an AST.
+let ast = scheme.parse(r#"
+    http.method != "POST" &&
+    not http.ua matches "(googlebot|facebook)" &&
+    port in {80 443}
+"#)?;
+
+println!("Parsed filter representation: {:?}", ast);
+
+// Compile the AST into an executable filter.
+let filter = ast.compile();
+
+let http = Http { 
+    method: String::from("GET"),
+    ua: "Mozilla"
+};
+
+let http_context = http.filter_context(&scheme);
+let result = filter.execute(&http_context)?;
+
+println!("Result {}", result);
+
+```
 ## Licensing
 
 Licensed under the MIT license. See the [LICENSE](LICENSE) file for details.
