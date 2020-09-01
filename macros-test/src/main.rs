@@ -19,6 +19,8 @@ fn main() {
     //     c: Int,
     //     d: Bytes
     // );
+    // let t = String::ty();
+    // let t = Option::<String>::ty();
     let scheme = Empty::fields();
     let scheme = Scheme::try_from_iter(scheme).unwrap();
     let e = Empty{

@@ -98,3 +98,7 @@ impl GetType for Option<IpAddr> {
         Type::Ip
     }
 }
+
+// pub fn get_type<T: GetType>() -> Type {
+//
+// }

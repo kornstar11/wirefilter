@@ -1,8 +1,9 @@
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
-use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, GenericParam, Generics, Index};
+use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, GenericParam, Generics, Index, Type, Path, PathArguments, GenericArgument};
 use wirefilter::derive::Filterable;
+use wirefilter::derive::GetType;
 use wirefilter::errors::Error;
 use wirefilter::{Scheme, ExecutionContext};
 
@@ -85,6 +86,12 @@ fn make_has_fields(input: &DeriveInput) -> TokenStream {
         }
     }
 }
+//stolen from: https://stackoverflow.com/questions/55271857/how-can-i-get-the-t-from-an-optiont-when-using-syn
+fn path_is_option(path: &Path) -> bool {
+    path.leading_colon.is_none()
+        && path.segments.len() == 1
+        && path.segments.iter().next().unwrap().ident == "Option"
+}
 
 fn iter_members_has_fields(data: &Data) -> TokenStream {
     match *data {
@@ -94,13 +101,35 @@ fn iter_members_has_fields(data: &Data) -> TokenStream {
                     let recurse = fields.named.iter().map(|f| {
                         let name = &f.ident;
                         let ty = &f.ty;
-                        // let check = quote_spanned! {f.span() =>
-                        //     &self.#name.generate_context(&mut ctx, stringify!(#name));
-                        //     println!("Type is {}", stringify!(#ty));
-                        // };
-                        quote_spanned! {f.span() =>
-                            new_fields.push((String::from(stringify!(#name)), #ty::ty()));
+                        match ty {
+                            Type::Path(typepath) if typepath.qself.is_none() && path_is_option(&typepath.path) => {
+                                let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
+                                // It should have only on angle-bracketed param ("<String>"):
+                                let generic_arg = match type_params {
+                                    PathArguments::AngleBracketed(params) => params.args.iter().next().unwrap(),
+                                    _ => panic!("Missing Bracket"),
+                                };
+                                // This argument must be a type:
+                                let gen = match generic_arg {
+                                    GenericArgument::Type(ty) => ty,
+                                    _ => panic!("Missing Generic"),
+                                };
+                                quote_spanned! {f.span() =>
+                                    new_fields.push((String::from(stringify!(#name)), Option::<#gen>::ty()));
+                                }
+                            }
+                            _ => {
+                                quote_spanned! {f.span() =>
+                                    new_fields.push((String::from(stringify!(#name)), #ty::ty()));
+                                    //new_fields.push((String::from(stringify!(#name)), GetType::ty<#ty>()));
+                                }
+
+                            }
                         }
+                        // quote_spanned! {f.span() =>
+                        //     //new_fields.push((String::from(stringify!(#name)), #ty::ty()));
+                        //     new_fields.push((String::from(stringify!(#name)), GetType::ty<#ty>()));
+                        // }
                     });
                     quote! {
                         #(#recurse)*
