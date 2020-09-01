@@ -70,7 +70,7 @@ mod range_set;
 mod rhs_types;
 mod strict_partial_ord;
 mod types;
-pub mod filterable;
+pub mod derive;
 pub mod errors;
 
 pub use self::{

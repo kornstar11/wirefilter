@@ -1,13 +1,18 @@
 use crate::scheme::Scheme;
-use crate::{ExecutionContext, LhsValue};
+use crate::{ExecutionContext, LhsValue, Type};
 use crate::errors::Error;
 use std::net::IpAddr;
-
+///
+/// Filterable trait is used to create a ExecutionContext against a particular Scheme, and then populate the ExecutionContext.
+/// Idea is that users can use `#[derive(Filterable)]` and the macros will automagicly implement this trait.
+///
 pub trait Filterable {
     fn filter_context<'s>(&self, schema: &'s Scheme) -> Result<ExecutionContext<'s>, Error>;
 }
 
-
+///
+/// GenContext is designed to be used on each attribute of a struct that has a derived Filterable.
+///
 pub trait GenContext {
     fn generate_context<'s>(&self, ctx: &mut ExecutionContext<'s>, field_name: &str) -> Result<(), Error>;
 }
@@ -45,4 +50,10 @@ impl<T: GenContext> GenContext for Option<T> {
         Ok(())
     }
 }
-
+///
+/// Creates a Vec of fields that can be used to create a Scheme to be generated.
+///
+///
+trait HasFields {
+    fn fields() -> Vec<(String, Type)>;
+}

@@ -1,6 +1,6 @@
 
 use wirefilter_macros::*;
-use wirefilter::filterable::*;
+use wirefilter::derive::*;
 use wirefilter::*;
 use std::net::IpAddr;
 

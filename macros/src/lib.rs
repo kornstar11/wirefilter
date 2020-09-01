@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
 use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, GenericParam, Generics, Index};
-use wirefilter::filterable::Filterable;
+use wirefilter::derive::Filterable;
 use wirefilter::errors::Error;
 use wirefilter::{Scheme, ExecutionContext};
 
