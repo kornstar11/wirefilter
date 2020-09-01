@@ -4,7 +4,7 @@ use wirefilter::derive::*;
 use wirefilter::*;
 use std::net::IpAddr;
 
-#[derive(Debug, Filterable)]
+#[derive(Debug, Filterable, HasFields)]
 struct Empty{
     a: String,
     b: IpAddr,
@@ -13,12 +13,14 @@ struct Empty{
 }
 
 fn main() {
-    let scheme = Scheme!(
-        a: Bytes,
-        b: Ip,
-        c: Int,
-        d: Bytes
-    );
+    // let scheme = Scheme!(
+    //     a: Bytes,
+    //     b: Ip,
+    //     c: Int,
+    //     d: Bytes
+    // );
+    let scheme = Empty::fields();
+    let scheme = Scheme::try_from_iter(scheme).unwrap();
     let e = Empty{
         a: String::from("A"),
         b: IpAddr::from([1,1,1,1]),

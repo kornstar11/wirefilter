@@ -54,6 +54,47 @@ impl<T: GenContext> GenContext for Option<T> {
 /// Creates a Vec of fields that can be used to create a Scheme to be generated.
 ///
 ///
-trait HasFields {
+pub trait HasFields {
     fn fields() -> Vec<(String, Type)>;
+}
+
+//TODO could be part of the `declare_types` macro? Also, its pretty hacky atm, the duplication for Option is a real stinker.
+pub trait GetType {
+    fn ty() -> Type;
+}
+
+impl GetType for String {
+    fn ty() -> Type {
+        Type::Bytes
+    }
+}
+
+impl GetType for usize {
+    fn ty() -> Type {
+        Type::Int
+    }
+}
+
+impl GetType for IpAddr {
+    fn ty() -> Type {
+        Type::Ip
+    }
+}
+
+impl GetType for Option<String> {
+    fn ty() -> Type {
+        Type::Bytes
+    }
+}
+
+impl GetType for Option<usize> {
+    fn ty() -> Type {
+        Type::Int
+    }
+}
+
+impl GetType for Option<IpAddr> {
+    fn ty() -> Type {
+        Type::Ip
+    }
 }

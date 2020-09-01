@@ -14,15 +14,13 @@ pub fn derive_filterable(input: proc_macro::TokenStream) -> proc_macro::TokenStr
     // Parse the input tokens into a syntax tree.
     let input = parse_macro_input!(input as DeriveInput);
     make_filterable(&input).into()
-
-
 }
 
 // non recursive for now
 fn make_filterable(input: &DeriveInput) -> TokenStream {
     let name = &input.ident;
     let data = &input.data;
-    let members = iter_members(data);
+    let members = iter_members_filterable(data);
 
     quote! {
         impl Filterable for #name {
@@ -35,7 +33,7 @@ fn make_filterable(input: &DeriveInput) -> TokenStream {
     }
 }
 
-fn iter_members(data: &Data) -> TokenStream {
+fn iter_members_filterable(data: &Data) -> TokenStream {
     match *data {
         Data::Struct(ref data) => {
             match data.fields {
@@ -49,6 +47,59 @@ fn iter_members(data: &Data) -> TokenStream {
                         };
                         quote_spanned! {f.span() =>
                             #check
+                        }
+                    });
+                    quote! {
+                        #(#recurse)*
+                    }
+                }
+                Fields::Unit | Fields::Unnamed(_) => unimplemented!(),
+            }
+        }
+        Data::Enum(_) | Data::Union(_) => unimplemented!(),
+    }
+}
+
+#[proc_macro_derive(HasFields)]
+pub fn derive_has_fields(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    // Parse the input tokens into a syntax tree.
+    let input = parse_macro_input!(input as DeriveInput);
+    make_has_fields(&input).into()
+}
+
+// non recursive for now
+fn make_has_fields(input: &DeriveInput) -> TokenStream {
+    let name = &input.ident;
+    let data = &input.data;
+    let members = iter_members_has_fields(data);
+
+    quote! {
+        impl HasFields for #name {
+            fn fields() -> Vec<(String, Type)> {
+                let mut new_fields: Vec<(String, Type)> = Vec::new();
+                //println!("HERE {}", stringify!(#members));
+                #members
+
+                new_fields
+            }
+        }
+    }
+}
+
+fn iter_members_has_fields(data: &Data) -> TokenStream {
+    match *data {
+        Data::Struct(ref data) => {
+            match data.fields {
+                Fields::Named(ref fields) => {
+                    let recurse = fields.named.iter().map(|f| {
+                        let name = &f.ident;
+                        let ty = &f.ty;
+                        // let check = quote_spanned! {f.span() =>
+                        //     &self.#name.generate_context(&mut ctx, stringify!(#name));
+                        //     println!("Type is {}", stringify!(#ty));
+                        // };
+                        quote_spanned! {f.span() =>
+                            new_fields.push((String::from(stringify!(#name)), #ty::ty()));
                         }
                     });
                     quote! {
