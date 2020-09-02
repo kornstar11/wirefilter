@@ -37,17 +37,15 @@ fn make_filterable(input: &DeriveInput) -> TokenStream {
 
 fn renamed_field(attrs: &Vec<Attribute>) -> Option<String> {
     for attr in attrs.iter() {
-        if let Meta::NameValue(pairs) = attr.parse_meta().unwrap() {
-            let key = pairs.path;
-            if key == "name" {
+        let parsed_attr: Meta = attr.parse_args().unwrap();
+        if let Meta::NameValue(pairs) = parsed_attr {
+            let key = pairs.path.segments.first().unwrap();
+            if key.ident.to_string() == "name" {
                 let value = match pairs.lit {
                     Lit::Str(name) => {
-                        println!("Renamed: {}", name.value());
-                        return Some(name.value);
+                        return Some(name.value());
                     },
-                    _ => {
-
-                    }
+                    _ => {}
                 };
             }
         }
@@ -61,12 +59,23 @@ fn iter_members_filterable(data: &Data) -> TokenStream {
             match data.fields {
                 Fields::Named(ref fields) => {
                     let recurse = fields.named.iter().map(|f| {
-                        let rename = renamed_field(&f.attrs);
+                        let defined_name = renamed_field(&f.attrs);
                         let name = &f.ident;
                         let ty = &f.ty;
-                        let check = quote_spanned! {f.span() =>
-                            &self.#name.generate_context(&mut ctx, stringify!(#name));
-                            println!("Type is {}", stringify!(#ty));
+                        let check = match defined_name {
+                            Some(c_defined_name) => {
+                                quote_spanned! {f.span() =>
+                                    &self.#name.generate_context(&mut ctx, #c_defined_name);
+                                    println!("Type is {}", stringify!(#ty));
+                                }
+                            },
+                            None => {
+                                quote_spanned! {f.span() =>
+                                    &self.#name.generate_context(&mut ctx, stringify!(#name));
+                                    println!("Type is {}", stringify!(#ty));
+                                }
+
+                            }
                         };
                         quote_spanned! {f.span() =>
                             #check
@@ -123,11 +132,10 @@ fn iter_members_has_fields(data: &Data) -> TokenStream {
                     let recurse = fields.named.iter().map(|f| {
                         let name = &f.ident;
                         let ty = &f.ty;
-                        //f.attrs
-                        match ty {
+                        let defined_name = renamed_field(&f.attrs).unwrap_or_else(|| name.as_ref().unwrap().to_string());
+                        let r = match ty {
                             Type::Path(typepath) if typepath.qself.is_none() && path_is_option(&typepath.path) => {
                                 let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
-                                // It should have only on angle-bracketed param ("<String>"):
                                 let generic_arg = match type_params {
                                     PathArguments::AngleBracketed(params) => params.args.iter().next().unwrap(),
                                     _ => panic!("Missing Bracket"),
@@ -138,21 +146,19 @@ fn iter_members_has_fields(data: &Data) -> TokenStream {
                                     _ => panic!("Missing Generic"),
                                 };
                                 quote_spanned! {f.span() =>
-                                    new_fields.push((String::from(stringify!(#name)), Option::<#gen>::ty()));
+                                    new_fields.push((String::from(#defined_name), Option::<#gen>::ty()));
                                 }
                             }
                             _ => {
                                 quote_spanned! {f.span() =>
-                                    new_fields.push((String::from(stringify!(#name)), #ty::ty()));
+                                    new_fields.push((String::from(#defined_name), #ty::ty()));
                                     //new_fields.push((String::from(stringify!(#name)), GetType::ty<#ty>()));
                                 }
 
                             }
-                        }
-                        // quote_spanned! {f.span() =>
-                        //     //new_fields.push((String::from(stringify!(#name)), #ty::ty()));
-                        //     new_fields.push((String::from(stringify!(#name)), GetType::ty<#ty>()));
-                        // }
+                        };
+                        r
+
                     });
                     quote! {
                         #(#recurse)*
