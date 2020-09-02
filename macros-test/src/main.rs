@@ -6,6 +6,7 @@ use std::net::IpAddr;
 
 #[derive(Debug, Filterable, HasFields)]
 struct Empty{
+    #[field(name="test.a")]
     a: String,
     b: IpAddr,
     c: usize,

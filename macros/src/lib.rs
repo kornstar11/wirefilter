@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
-use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, GenericParam, Generics, Index, Type, Path, PathArguments, GenericArgument};
+use syn::{Lit,Meta, parse_macro_input, parse_quote, Data, DeriveInput, Fields, GenericParam, Generics, Index, Type, Path, PathArguments, GenericArgument, Attribute};
 use wirefilter::derive::Filterable;
 use wirefilter::derive::GetType;
 use wirefilter::errors::Error;
@@ -9,8 +9,9 @@ use wirefilter::{Scheme, ExecutionContext};
 
 //https://github.com/dtolnay/syn/blob/master/examples/heapsize/heapsize_derive/src/lib.rs
 //https://doc.rust-lang.org/book/ch19-06-macros.html#how-to-write-a-custom-derive-macro
-
-#[proc_macro_derive(Filterable)]
+//https://doc.rust-lang.org/reference/procedural-macros.html#derive-macro-helper-attributes
+//https://docs.rs/syn/1.0.39/syn/struct.Attribute.html#parsing-from-attribute-to-structured-arguments
+#[proc_macro_derive(Filterable, attributes(field))]
 pub fn derive_filterable(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // Parse the input tokens into a syntax tree.
     let input = parse_macro_input!(input as DeriveInput);
@@ -34,12 +35,33 @@ fn make_filterable(input: &DeriveInput) -> TokenStream {
     }
 }
 
+fn renamed_field(attrs: &Vec<Attribute>) -> Option<String> {
+    for attr in attrs.iter() {
+        if let Meta::NameValue(pairs) = attr.parse_meta().unwrap() {
+            let key = pairs.path;
+            if key == "name" {
+                let value = match pairs.lit {
+                    Lit::Str(name) => {
+                        println!("Renamed: {}", name.value());
+                        return Some(name.value);
+                    },
+                    _ => {
+
+                    }
+                };
+            }
+        }
+    }
+    None
+}
+
 fn iter_members_filterable(data: &Data) -> TokenStream {
     match *data {
         Data::Struct(ref data) => {
             match data.fields {
                 Fields::Named(ref fields) => {
                     let recurse = fields.named.iter().map(|f| {
+                        let rename = renamed_field(&f.attrs);
                         let name = &f.ident;
                         let ty = &f.ty;
                         let check = quote_spanned! {f.span() =>
@@ -61,7 +83,7 @@ fn iter_members_filterable(data: &Data) -> TokenStream {
     }
 }
 
-#[proc_macro_derive(HasFields)]
+#[proc_macro_derive(HasFields, attributes(field))]
 pub fn derive_has_fields(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // Parse the input tokens into a syntax tree.
     let input = parse_macro_input!(input as DeriveInput);
@@ -101,6 +123,7 @@ fn iter_members_has_fields(data: &Data) -> TokenStream {
                     let recurse = fields.named.iter().map(|f| {
                         let name = &f.ident;
                         let ty = &f.ty;
+                        //f.attrs
                         match ty {
                             Type::Path(typepath) if typepath.qself.is_none() && path_is_option(&typepath.path) => {
                                 let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
@@ -141,6 +164,7 @@ fn iter_members_has_fields(data: &Data) -> TokenStream {
         Data::Enum(_) | Data::Union(_) => unimplemented!(),
     }
 }
+
 
 
 #[cfg(test)]
