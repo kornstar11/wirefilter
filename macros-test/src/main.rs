@@ -11,6 +11,7 @@ struct Empty{
     b: IpAddr,
     c: usize,
     d: Option<String>,
+    e: Vec<(String, String)>,
 }
 
 fn main() {
@@ -28,7 +29,8 @@ fn main() {
         a: String::from("A"),
         b: IpAddr::from([1,1,1,1]),
         c: 1234,
-        d: Some("D".to_string())
+        d: Some("D".to_string()),
+        e: vec![("k".to_ascii_lowercase(), "v".to_ascii_lowercase())]
     };
     e.filter_context(&scheme).unwrap();
     println!("Hello, world!");

@@ -124,6 +124,12 @@ fn path_is_option(path: &Path) -> bool {
         && path.segments.iter().next().unwrap().ident == "Option"
 }
 
+fn path_is_vec(path: &Path) -> bool { //todo this is bahhhd said a sheep
+    path.leading_colon.is_none()
+        && path.segments.len() == 1
+        && path.segments.iter().next().unwrap().ident == "Vec"
+}
+
 fn iter_members_has_fields(data: &Data) -> TokenStream {
     match *data {
         Data::Struct(ref data) => {
@@ -147,6 +153,21 @@ fn iter_members_has_fields(data: &Data) -> TokenStream {
                                 };
                                 quote_spanned! {f.span() =>
                                     new_fields.push((String::from(#defined_name), Option::<#gen>::ty()));
+                                }
+                            },
+                            Type::Path(typepath) if typepath.qself.is_none() && path_is_vec(&typepath.path) => {
+                                let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
+                                let generic_arg = match type_params {
+                                    PathArguments::AngleBracketed(params) => params.args.iter().next().unwrap(),
+                                    _ => panic!("Missing Bracket"),
+                                };
+                                // This argument must be a type:
+                                let gen = match generic_arg {
+                                    GenericArgument::Type(ty) => ty,
+                                    _ => panic!("Missing Generic"),
+                                };
+                                quote_spanned! {f.span() =>
+                                    new_fields.push((String::from(#defined_name), Vec::<#gen>::ty()));
                                 }
                             }
                             _ => {

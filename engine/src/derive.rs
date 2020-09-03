@@ -50,6 +50,21 @@ impl<T: GenContext> GenContext for Option<T> {
         Ok(())
     }
 }
+
+impl GenContext for Vec<(String, String)> {
+    fn generate_context<'s>(&self, ctx: &mut ExecutionContext<'s>, field_name: &str) -> Result<(), Error> {
+        let concat: String = self
+            .iter()
+            .flat_map(|(k, v)| {
+                Some(format!("{}:{}\n", k, v))
+            })
+            .fold(String::new(), |acc, ele| acc + ele.as_str());
+        if !concat.is_empty() {
+            concat.generate_context(ctx, field_name)?
+        }
+        Ok(())
+    }
+}
 ///
 /// Creates a Vec of fields that can be used to create a Scheme to be generated.
 ///
@@ -64,6 +79,12 @@ pub trait GetType {
 }
 
 impl GetType for String {
+    fn ty() -> Type {
+        Type::Bytes
+    }
+}
+
+impl GetType for Vec<(String, String)> {
     fn ty() -> Type {
         Type::Bytes
     }
