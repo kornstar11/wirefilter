@@ -4,7 +4,6 @@ use syn::spanned::Spanned;
 use syn::{Lit,Meta, parse_macro_input, parse_quote, Data, DeriveInput, Fields, GenericParam, Generics, Index, Type, Path, PathArguments, GenericArgument, Attribute};
 use wirefilter::derive::Filterable;
 use wirefilter::derive::GetType;
-use wirefilter::errors::Error;
 use wirefilter::{Scheme, ExecutionContext};
 
 //https://github.com/dtolnay/syn/blob/master/examples/heapsize/heapsize_derive/src/lib.rs
@@ -26,7 +25,7 @@ fn make_filterable(input: &DeriveInput) -> TokenStream {
 
     quote! {
         impl Filterable for #name {
-            fn filter_context<'s>(&self, schema: &'s Scheme) -> Result<ExecutionContext<'s>, Error> {
+            fn filter_context<'s>(&self, schema: &'s Scheme) -> Result<ExecutionContext<'s>, wirefilter::errors::Error> {
                 let mut ctx = ExecutionContext::new(schema);
                 #members
                 Ok(ctx)
