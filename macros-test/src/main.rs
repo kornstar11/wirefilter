@@ -3,6 +3,7 @@ use wirefilter_macros::*;
 use wirefilter::derive::*;
 use wirefilter::*;
 use std::net::IpAddr;
+use std::time::SystemTime;
 
 #[derive(Debug, Filterable, HasFields)]
 struct Empty{
@@ -12,6 +13,8 @@ struct Empty{
     c: usize,
     d: Option<String>,
     e: Vec<(String, String)>,
+    #[field(ignore="true")]
+    f: SystemTime
 }
 
 fn main() {
@@ -30,7 +33,8 @@ fn main() {
         b: IpAddr::from([1,1,1,1]),
         c: 1234,
         d: Some("D".to_string()),
-        e: vec![("k".to_ascii_lowercase(), "v".to_ascii_lowercase())]
+        e: vec![("k".to_ascii_lowercase(), "v".to_ascii_lowercase())],
+        f: SystemTime::now(),
     };
     e.filter_context(&scheme).unwrap();
     println!("Hello, world!");

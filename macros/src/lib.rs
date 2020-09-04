@@ -10,7 +10,7 @@ use wirefilter::{Scheme, ExecutionContext};
 //https://doc.rust-lang.org/book/ch19-06-macros.html#how-to-write-a-custom-derive-macro
 //https://doc.rust-lang.org/reference/procedural-macros.html#derive-macro-helper-attributes
 //https://docs.rs/syn/1.0.39/syn/struct.Attribute.html#parsing-from-attribute-to-structured-arguments
-#[proc_macro_derive(Filterable, attributes(field))]
+#[proc_macro_derive(Filterable, attributes(field,ignore))]
 pub fn derive_filterable(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // Parse the input tokens into a syntax tree.
     let input = parse_macro_input!(input as DeriveInput);
@@ -52,32 +52,50 @@ fn renamed_field(attrs: &Vec<Attribute>) -> Option<String> {
     None
 }
 
+fn ignore(attrs: &Vec<Attribute>) -> bool {
+    println!("Test ignore");
+    for attr in attrs.iter() {
+        let parsed_attr: Meta = attr.parse_args().unwrap();
+        if let Meta::NameValue(pairs) = parsed_attr {
+            let key = pairs.path.segments.first().unwrap();
+            if key.ident.to_string() == "ignore" {
+                return true;
+            }
+        }
+    }
+    false
+
+}
+
 fn iter_members_filterable(data: &Data) -> TokenStream {
     match *data {
         Data::Struct(ref data) => {
             match data.fields {
                 Fields::Named(ref fields) => {
                     let recurse = fields.named.iter().map(|f| {
-                        let defined_name = renamed_field(&f.attrs);
-                        let name = &f.ident;
-                        let ty = &f.ty;
-                        let check = match defined_name {
-                            Some(c_defined_name) => {
-                                quote_spanned! {f.span() =>
-                                    &self.#name.generate_context(&mut ctx, #c_defined_name);
-                                    println!("Type is {}", stringify!(#ty));
+                        if !ignore(&f.attrs) {
+                            let defined_name = renamed_field(&f.attrs);
+                            let name = &f.ident;
+                            let ty = &f.ty;
+                            let check = match defined_name {
+                                Some(c_defined_name) => {
+                                    quote_spanned! {f.span() =>
+                                        &self.#name.generate_context(&mut ctx, #c_defined_name);
+                                        println!("Type is {}", stringify!(#ty));
+                                    }
+                                },
+                                None => {
+                                    quote_spanned! {f.span() =>
+                                        &self.#name.generate_context(&mut ctx, stringify!(#name));
+                                        println!("Type is {}", stringify!(#ty));
+                                    }
                                 }
-                            },
-                            None => {
-                                quote_spanned! {f.span() =>
-                                    &self.#name.generate_context(&mut ctx, stringify!(#name));
-                                    println!("Type is {}", stringify!(#ty));
-                                }
-
+                            };
+                            quote_spanned! {f.span() =>
+                                #check
                             }
-                        };
-                        quote_spanned! {f.span() =>
-                            #check
+                        } else {
+                            quote!{}
                         }
                     });
                     quote! {
@@ -137,45 +155,49 @@ fn iter_members_has_fields(data: &Data) -> TokenStream {
                     let recurse = fields.named.iter().map(|f| {
                         let name = &f.ident;
                         let ty = &f.ty;
-                        let defined_name = renamed_field(&f.attrs).unwrap_or_else(|| name.as_ref().unwrap().to_string());
-                        let r = match ty {
-                            Type::Path(typepath) if typepath.qself.is_none() && path_is_option(&typepath.path) => {
-                                let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
-                                let generic_arg = match type_params {
-                                    PathArguments::AngleBracketed(params) => params.args.iter().next().unwrap(),
-                                    _ => panic!("Missing Bracket"),
-                                };
-                                // This argument must be a type:
-                                let gen = match generic_arg {
-                                    GenericArgument::Type(ty) => ty,
-                                    _ => panic!("Missing Generic"),
-                                };
-                                quote_spanned! {f.span() =>
-                                    new_fields.push((String::from(#defined_name), Option::<#gen>::ty()));
-                                }
-                            },
-                            Type::Path(typepath) if typepath.qself.is_none() && path_is_vec(&typepath.path) => {
-                                let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
-                                let generic_arg = match type_params {
-                                    PathArguments::AngleBracketed(params) => params.args.iter().next().unwrap(),
-                                    _ => panic!("Missing Bracket"),
-                                };
-                                // This argument must be a type:
-                                let gen = match generic_arg {
-                                    GenericArgument::Type(ty) => ty,
-                                    _ => panic!("Missing Generic"),
-                                };
-                                quote_spanned! {f.span() =>
-                                    new_fields.push((String::from(#defined_name), Vec::<#gen>::ty()));
-                                }
-                            }
-                            _ => {
-                                quote_spanned! {f.span() =>
-                                    new_fields.push((String::from(#defined_name), #ty::ty()));
-                                    //new_fields.push((String::from(stringify!(#name)), GetType::ty<#ty>()));
-                                }
+                        let r = if !ignore(&f.attrs) {
+                            let defined_name = renamed_field(&f.attrs).unwrap_or_else(|| name.as_ref().unwrap().to_string());
 
+                            match ty {
+                                Type::Path(typepath) if typepath.qself.is_none() && path_is_option(&typepath.path) => {
+                                    let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
+                                    let generic_arg = match type_params {
+                                        PathArguments::AngleBracketed(params) => params.args.iter().next().unwrap(),
+                                        _ => panic!("Missing Bracket"),
+                                    };
+                                    // This argument must be a type:
+                                    let gen = match generic_arg {
+                                        GenericArgument::Type(ty) => ty,
+                                        _ => panic!("Missing Generic"),
+                                    };
+                                    quote_spanned! {f.span() =>
+                                        new_fields.push((String::from(#defined_name), Option::<#gen>::ty()));
+                                    }
+                                },
+                                Type::Path(typepath) if typepath.qself.is_none() && path_is_vec(&typepath.path) => {
+                                    let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
+                                    let generic_arg = match type_params {
+                                        PathArguments::AngleBracketed(params) => params.args.iter().next().unwrap(),
+                                        _ => panic!("Missing Bracket"),
+                                    };
+                                    // This argument must be a type:
+                                    let gen = match generic_arg {
+                                        GenericArgument::Type(ty) => ty,
+                                        _ => panic!("Missing Generic"),
+                                    };
+                                    quote_spanned! {f.span() =>
+                                        new_fields.push((String::from(#defined_name), Vec::<#gen>::ty()));
+                                    }
+                                }
+                                _ => {
+                                    quote_spanned! {f.span() =>
+                                        new_fields.push((String::from(#defined_name), #ty::ty()));
+                                        //new_fields.push((String::from(stringify!(#name)), GetType::ty<#ty>()));
+                                    }
+                                }
                             }
+                        } else {
+                            quote!{}
                         };
                         r
 
