@@ -16,7 +16,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f4528227-9052-45a0-b726-4884d0e79cb4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/macros-test/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/macros-test/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/macros/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/macros/src/lib.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -70,7 +69,7 @@
       <workItem from="1595725631829" duration="12278000" />
       <workItem from="1598624522373" duration="22219000" />
       <workItem from="1598994899281" duration="3254000" />
-      <workItem from="1599145790623" duration="8170000" />
+      <workItem from="1599145790623" duration="8825000" />
     </task>
     <servers />
   </component>

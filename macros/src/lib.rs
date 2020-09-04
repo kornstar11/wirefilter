@@ -41,7 +41,7 @@ fn make_filterable(input: &DeriveInput) -> TokenStream {
 
 
 fn iter_members_filterable(data: &Data, outer_name: Option<String>) -> TokenStream {
-    println!("Outer name {:?}", outer_name);
+    //println!("Outer name {:?}", outer_name);
     match *data {
         Data::Struct(ref data) => {
             match data.fields {
@@ -57,11 +57,11 @@ fn iter_members_filterable(data: &Data, outer_name: Option<String>) -> TokenStre
                                 .flatten()
                                 .collect::<Vec<String>>()
                                 .join(".");
-                            println!("Defined name {:?}", defined_name);
+                            //println!("Defined name {:?}", defined_name);
                             let ty = &f.ty;
                             let check = quote_spanned! {f.span() =>
                                 &self.#name.generate_context(&mut ctx, #defined_name);
-                                println!("Type is {}", stringify!(#ty));
+                                //println!("Type is {}", stringify!(#ty));
                             };
                             quote_spanned! {f.span() =>
                                 #check
