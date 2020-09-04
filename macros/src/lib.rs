@@ -53,7 +53,6 @@ fn renamed_field(attrs: &Vec<Attribute>) -> Option<String> {
 }
 
 fn ignore(attrs: &Vec<Attribute>) -> bool {
-    println!("Test ignore");
     for attr in attrs.iter() {
         let parsed_attr: Meta = attr.parse_args().unwrap();
         if let Meta::NameValue(pairs) = parsed_attr {
