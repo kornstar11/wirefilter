@@ -137,7 +137,6 @@ fn iter_members_has_fields(data: &Data, outer_name: Option<String>) -> TokenStre
                                 .collect::<Vec<String>>()
                                 .join(".");
                             println!("Defined name type {:?}", defined_name);
-
                             match ty {
                                 Type::Path(typepath) if typepath.qself.is_none() && path_is_option(&typepath.path) => {
                                     let type_params = &(typepath.path.segments.iter().next()).unwrap().arguments;
