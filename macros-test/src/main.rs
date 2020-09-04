@@ -6,6 +6,7 @@ use std::net::IpAddr;
 use std::time::SystemTime;
 
 #[derive(Debug, Filterable, HasFields)]
+#[field(name="empty")]
 struct Empty{
     #[field(name="test.a")]
     a: String,
