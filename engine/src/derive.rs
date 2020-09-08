@@ -125,35 +125,8 @@ impl GetType for IpAddr {
     }
 }
 
-impl GetType for Option<String> {
+impl<T: GetType> GetType for Option<T> {
     fn ty() -> Type {
-        Type::Bytes
+        T::ty()
     }
 }
-
-impl GetType for Option<usize> {
-    fn ty() -> Type {
-        Type::Int
-    }
-}
-
-impl GetType for Option<i32> {
-    fn ty() -> Type {
-        Type::Int
-    }
-}
-impl GetType for Option<i64> {
-    fn ty() -> Type {
-        Type::Int
-    }
-}
-
-impl GetType for Option<IpAddr> {
-    fn ty() -> Type {
-        Type::Ip
-    }
-}
-
-// pub fn get_type<T: GetType>() -> Type {
-//
-// }
