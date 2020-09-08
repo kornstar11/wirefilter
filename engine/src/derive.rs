@@ -84,7 +84,7 @@ pub trait HasFields {
     fn fields() -> Vec<(String, Type)>;
 }
 
-//TODO could be part of the `declare_types` macro? Also, its pretty hacky atm, the duplication for Option is a real stinker.
+//TODO could be part of the `declare_types` macro?
 pub trait GetType {
     fn ty() -> Type;
 }
