@@ -4,7 +4,7 @@ use wirefilter::derive::*;
 use wirefilter::*;
 use std::net::IpAddr;
 use std::time::SystemTime;
-
+/// Test docs
 #[derive(Debug, Filterable, HasFields)]
 #[field(name="empty")]
 struct Empty{
