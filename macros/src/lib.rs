@@ -222,25 +222,3 @@ fn ignore(attrs: &Vec<Attribute>) -> bool {
     }
     false
 }
-
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[derive(Debug, Filterable)]
-    struct Empty;
-
-    #[test]
-    fn it_works() {
-        let scheme = Scheme!(
-          blah: Bytes
-        );
-        let e = Empty{};
-        let exc = e.filter_context(scheme).unwrap();
-
-
-        assert_eq!(2 + 2, 4);
-    }
-}
