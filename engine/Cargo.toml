@@ -28,7 +28,6 @@ memmem = "0.1.1"
 serde = { version = "1.0.78", features = ["derive"] }
 cfg-if = "0.1.6"
 
-
 [dev-dependencies]
 indoc = "0.3.0"
 criterion = "0.2.11"

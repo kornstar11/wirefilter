@@ -15,8 +15,6 @@ use std::{
     ptr,
 };
 
-
-
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub(crate) struct Field<'s> {
     scheme: &'s Scheme,
